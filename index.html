@@ -1162,10 +1162,11 @@
 
                 if (finalTranscript) {
                     document.getElementById('userInput').value = finalTranscript;
-                    document.getElementById('transcriptText').textContent = `✅ "${finalTranscript}"`;
+                    document.getElementById('transcriptText').textContent = `✅ Done: "${finalTranscript}" - Click Send to deliver`;
+                    document.getElementById('transcriptText').style.color = '#10b981';
                     setTimeout(() => {
                         toggleVoice(); // Stop listening
-                        sendMessage(); // Auto send
+                        // Don't auto send - let user review and click Send manually
                     }, 500);
                 }
             };
