@@ -1099,8 +1099,6 @@
 
         // ==================== VOICE RECOGNITION ====================
         let recognition = null;
-        let accumulatedTranscript = '';
-        let lastProcessedLength = 0;
 
         function initSpeechRecognition() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -1115,27 +1113,14 @@
             recognition.lang = 'en-US';
 
             recognition.onresult = (event) => {
-                let interimTranscript = '';
+                let fullTranscript = '';
 
-                // Process all results and only accumulate new final ones
-                for (let i = 0; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        // Check if this is a new final result
-                        const fullTextSoFar = accumulatedTranscript + transcript + ' ';
-                        if (fullTextSoFar.length > lastProcessedLength) {
-                            accumulatedTranscript = fullTextSoFar;
-                            lastProcessedLength = accumulatedTranscript.length;
-                        }
-                    } else {
-                        // Show interim transcript
-                        interimTranscript += transcript;
-                    }
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    fullTranscript += event.results[i][0].transcript;
                 }
 
-                // Display accumulated + interim
-                const displayText = accumulatedTranscript + interimTranscript;
-                document.getElementById('userInput').value = displayText.trim();
+                // Always update input with latest transcript
+                document.getElementById('userInput').value = fullTranscript;
             };
 
             recognition.onerror = (event) => {
@@ -1149,9 +1134,7 @@
             };
 
             recognition.onend = () => {
-                // Reset tracking when recognition restarts
                 if (state.isListening) {
-                    lastProcessedLength = 0;
                     recognition.start();
                 }
             };
@@ -1180,11 +1163,6 @@
                 // First click - start listening
                 // Stop AI speaking first
                 stopSpeaking();
-
-                // Reset accumulated transcript for new recording
-                accumulatedTranscript = '';
-                lastProcessedLength = 0;
-                document.getElementById('userInput').value = '';
 
                 recognition.start();
                 state.isListening = true;
