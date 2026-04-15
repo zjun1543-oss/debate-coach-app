@@ -303,6 +303,32 @@
             line-height: 1.6;
         }
 
+        /* Live Transcript */
+        .live-transcript {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            min-height: 60px;
+            display: none;
+        }
+
+        .live-transcript.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        .live-transcript p {
+            color: var(--success);
+            font-style: italic;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         /* Input Area */
         .input-area {
             display: flex;
@@ -679,6 +705,11 @@
                         First things first - set up your session above. Pick a topic, choose your side, and let's get started!
                     </div>
                 </div>
+            </div>
+
+            <!-- Live Transcript -->
+            <div class="live-transcript" id="liveTranscript">
+                <p id="transcriptText">🎤 Listening... Speak now!</p>
             </div>
 
             <!-- Input Area -->
@@ -1113,14 +1144,31 @@
             recognition.lang = 'en-US';
 
             recognition.onresult = (event) => {
-                let fullTranscript = '';
+                let finalTranscript = '';
+                let interimTranscript = '';
 
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    fullTranscript += event.results[i][0].transcript;
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
                 }
 
-                // Always update input with latest transcript
-                document.getElementById('userInput').value = fullTranscript;
+                if (interimTranscript) {
+                    document.getElementById('transcriptText').textContent = `🎤 ${interimTranscript}`;
+                }
+
+                if (finalTranscript) {
+                    document.getElementById('userInput').value = finalTranscript;
+                    document.getElementById('transcriptText').textContent = `✅ Done: "${finalTranscript}" - Click Send to deliver`;
+                    document.getElementById('transcriptText').style.color = '#10b981';
+                    setTimeout(() => {
+                        toggleVoice(); // Stop listening
+                        // Don't auto send - let user review and click Send manually
+                    }, 500);
+                }
             };
 
             recognition.onerror = (event) => {
@@ -1146,28 +1194,21 @@
             if (!recognition && !initSpeechRecognition()) return;
 
             const btn = document.getElementById('voiceBtn');
+            const transcript = document.getElementById('liveTranscript');
 
             if (state.isListening) {
-                // Second click - stop and send
                 recognition.stop();
                 state.isListening = false;
                 btn.classList.remove('listening');
                 btn.classList.add('inactive');
-
-                // Auto send after stopping
-                const input = document.getElementById('userInput');
-                if (input.value.trim() && state.sessionActive) {
-                    setTimeout(() => sendMessage(), 300);
-                }
+                transcript.classList.remove('active');
             } else {
-                // First click - start listening
-                // Stop AI speaking first
-                stopSpeaking();
-
                 recognition.start();
                 state.isListening = true;
                 btn.classList.add('listening');
                 btn.classList.remove('inactive');
+                transcript.classList.add('active');
+                document.getElementById('transcriptText').textContent = '🎤 Listening... Speak now!';
             }
         }
 
