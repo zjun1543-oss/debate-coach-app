@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debate Coach AI - Your Path to Eloquence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            min-height: 100vh;
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* API Key Section */
+        .api-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .api-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .api-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .api-input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: var(--light);
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        /* Mode Selection */
+        .mode-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .mode-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-3px);
+        }
+
+        .mode-card.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .mode-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mode-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        /* Setup Section */
+        .setup-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .setup-section h3 {
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setup-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 12px 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: var(--light);
+            font-size: 1rem;
+        }
+
+        .skill-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .skill-option {
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .skill-option:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .skill-option.active {
+            border-color: var(--secondary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .skill-option.hidden {
+            display: none;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chat-messages {
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+
+        .message.ai {
+            background: rgba(99, 102, 241, 0.15);
+            border-left: 4px solid var(--primary);
+            margin-right: auto;
+        }
+
+        .message.user {
+            background: rgba(255,255,255,0.1);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message .sender {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .message .content {
+            line-height: 1.6;
+        }
+
+        /* Live Transcript */
+        .live-transcript {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--success);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            min-height: 60px;
+            display: none;
+        }
+
+        .live-transcript.active {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        .live-transcript p {
+            color: var(--success);
+            font-style: italic;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Input Area */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            min-width: 250px;
+        }
+
+        .input-wrapper textarea {
+            width: 100%;
+            padding: 15px;
+            padding-right: 50px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            color: var(--light);
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 50px;
+            max-height: 150px;
+            font-family: inherit;
+        }
+
+        .input-wrapper textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .input-btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .voice-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .voice-btn.inactive {
+            background: rgba(255,255,255,0.1);
+            color: var(--gray);
+        }
+
+        .voice-btn.listening {
+            background: var(--danger);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        /* Sound Controls */
+        .sound-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .sound-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .sound-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sound-btn.active {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .stop-speaking-btn {
+            display: none;
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .stop-speaking-btn.visible {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Debrief Report */
+        .debrief-report {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px solid var(--primary);
+            display: none;
+        }
+
+        .debrief-report.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .debrief-section {
+            margin-bottom: 25px;
+        }
+
+        .debrief-section h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .aura-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--success);
+        }
+
+        .metric-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .logic-check, .golden-rewrite {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            line-height: 1.7;
+        }
+
+        .original-speech {
+            color: var(--gray);
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .improved-speech {
+            color: var(--success);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+
+        .status-badge.active {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary);
+        }
+
+        .status-badge.sparring {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        /* Sparring Button */
+        .end-sparring-btn {
+            display: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            justify-content: center;
+        }
+
+        .end-sparring-btn.visible {
+            display: flex;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gray);
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mode-selection, .setup-row, .skill-options, .aura-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎤 Debate Coach AI</h1>
+            <p>Your 24-year-old WUDC Champion Debate Partner</p>
+        </div>
+
+        <!-- API Key Section -->
+        <div class="api-section">
+            <h3>🔑 API Configuration</h3>
+            <div class="api-input-group">
+                <input type="password" id="apiKeyInput" placeholder="Enter your DeepSeek API Key (sk-...)">
+                <button class="btn btn-success" onclick="saveApiKey()">💾 Save</button>
+                <button class="btn btn-secondary" onclick="testApiKey()">Test</button>
+            </div>
+            <p style="margin-top: 10px; color: var(--gray); font-size: 0.9rem;">
+                Your API key is stored locally in your browser and never sent to our servers.
+            </p>
+        </div>
+
+        <!-- Mode Selection -->
+        <div class="mode-selection">
+            <div class="mode-card active" id="tutorialMode" onclick="selectMode('tutorial')">
+                <h3>📚 Tutorial Mode</h3>
+                <p>Work with your coach to build arguments step-by-step. Get real-time feedback and guidance.</p>
+            </div>
+            <div class="mode-card" id="sparringMode" onclick="selectMode('sparring')">
+                <h3>⚔️ Sparring Mode</h3>
+                <p>Pure debate combat. AI as your opponent - no coaching until the round ends.</p>
+            </div>
+        </div>
+
+        <!-- Setup Section -->
+        <div class="setup-section">
+            <h3>⚙️ Session Setup</h3>
+            <div class="setup-row">
+                <div class="form-group">
+                    <label>Select Topic</label>
+                    <select id="topicSelect" onchange="handleTopicChange()">
+                        <option value="">-- Choose a topic --</option>
+                        <optgroup label="Classic THBT Topics">
+                            <option value="THBT governments should provide UBI">THBT governments should provide Universal Basic Income</option>
+                            <option value="THBT social media does more harm than good">THBT social media does more harm than good</option>
+                            <option value="THBT voting should be mandatory">THBT voting should be mandatory</option>
+                            <option value="THBT animal testing should be banned">THBT animal testing should be banned</option>
+                            <option value="THBT schools should ban homework">THBT schools should ban homework</option>
+                        </optgroup>
+                        <optgroup label="My Saved Topics" id="savedTopicsGroup"></optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Custom Topic</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="customTopic" placeholder="Enter custom debate topic...">
+                        <button class="btn btn-secondary" onclick="saveCustomTopic()">💾 Save Topic</button>
+                    </div>
+                </div>
+            </div>
+            <div class="setup-row">
+                <div class="form-group">
+                    <label>Your Side</label>
+                    <select id="sideSelect">
+                        <option value="proposition">Proposition (Affirmative)</option>
+                        <option value="opposition">Opposition (Negative)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Input Mode</label>
+                    <select id="inputMode" onchange="toggleInputMode()">
+                        <option value="voice">🎤 Voice (Recommended)</option>
+                        <option value="text">⌨️ Text Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Training Focus (Tutorial Mode Only) -->
+            <div id="trainingFocusSection">
+                <label style="font-weight: 600; color: var(--gray);">Training Focus</label>
+                <div class="skill-options" id="skillOptions">
+                    <div class="skill-option" onclick="selectSkill('clarity')" id="skill-clarity">
+                        <strong>🎯 Clarity</strong>
+                        <p style="font-size: 0.85rem; color: var(--gray); margin-top: 5px;">Clear expression</p>
+                    </div>
+                    <div class="skill-option" onclick="selectSkill('rebuttal')" id="skill-rebuttal">
+                        <strong>⚔️ Rebuttal</strong>
+                        <p style="font-size: 0.85rem; color: var(--gray); margin-top: 5px;">Counter arguments</p>
+                    </div>
+                    <div class="skill-option" onclick="selectSkill('argument')" id="skill-argument">
+                        <strong>🏗️ Arguments</strong>
+                        <p style="font-size: 0.85rem; color: var(--gray); margin-top: 5px;">Build claims</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startSession()" style="width: 100%; justify-content: center; margin-top: 20px;">
+                🚀 Start Session
+            </button>
+        </div>
+
+        <!-- Sound Controls -->
+        <div class="sound-controls" style="flex-wrap: wrap;">
+            <button class="sound-btn" id="soundOnBtn" onclick="setSound('on')">🔊 Sound On</button>
+            <button class="sound-btn" id="soundOffBtn" onclick="setSound('off')">🔇 Sound Off</button>
+            <button class="sound-btn" onclick="testSound()">🔉 Test</button>
+            <button class="sound-btn stop-speaking-btn" id="stopSpeakingBtn" onclick="stopSpeaking()">
+                🔇 Stop Speaking
+            </button>
+            <select id="voiceSelect" onchange="selectVoice()" style="padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: var(--light); font-size: 0.85rem; cursor: pointer;">
+                <option value="">Loading voices...</option>
+            </select>
+            <button class="sound-btn" onclick="testAllVoices()" title="Preview all voices">🎵 Voices</button>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai">
+                    <div class="sender">Debate Coach</div>
+                    <div class="content">
+                        Hey! 👋 Great to meet you. I'm your debate coach here to help you dominate the podium.
+                        <br><br>
+                        First things first - set up your session above. Pick a topic, choose your side, and let's get started!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Transcript -->
+            <div class="live-transcript" id="liveTranscript">
+                <p id="transcriptText">🎤 Listening... Speak now!</p>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <textarea id="userInput" placeholder="Type your argument here... (or use voice)" rows="2"></textarea>
+                </div>
+                <div class="input-btn-group">
+                    <button class="voice-btn inactive" id="voiceBtn" onclick="toggleVoice()" title="Toggle Voice Input">
+                        🎤
+                    </button>
+                    <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                    <button class="btn btn-warning end-sparring-btn" id="endSparringBtn" onclick="endSparring()">
+                        🏁 End Sparring - View Debrief
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debrief Report -->
+        <div class="debrief-report" id="debriefReport">
+            <h2 style="margin-bottom: 20px; text-align: center;">📊 Session Debrief Report</h2>
+
+            <div class="debrief-section">
+                <h4>✨ Aura Check</h4>
+                <div class="aura-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value" id="fluencyScore">-</div>
+                        <div class="metric-label">Fluency</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="dehydrationRate">-</div>
+                        <div class="metric-label">Dehydration</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="paceScore">-</div>
+                        <div class="metric-label">Pace</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="debrief-section">
+                <h4>🧠 Logic Check</h4>
+                <div class="logic-check" id="logicCheck">
+                    Analysis will appear here after your session...
+                </div>
+            </div>
+
+            <div class="debrief-section">
+                <h4>👑 Golden Rewrite</h4>
+                <div class="golden-rewrite">
+                    <div class="original-speech" id="originalSpeech">Your original speech...</div>
+                    <div class="improved-speech" id="improvedSpeech">Your elevated version...</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startNewSession()" style="width: 100%; justify-content: center;">
+                🔄 Start New Session
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STATE ====================
+        let state = {
+            mode: 'tutorial', // 'tutorial' or 'sparring'
+            skill: null, // 'clarity', 'rebuttal', 'argument'
+            topic: '',
+            side: 'proposition',
+            inputMode: 'voice',
+            soundEnabled: true,
+            apiKey: '',
+            sessionActive: false,
+            sparringActive: false,
+            isListening: false,
+            isSpeaking: false,
+            conversationHistory: [],
+            userSpeeches: [],
+            currentTurn: 0,
+            selectedVoice: null,
+            availableVoices: []
+        };
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadApiKey();
+            loadSavedTopics();
+            setSound('on');
+            loadVoices();
+        });
+
+        // ==================== API KEY MANAGEMENT ====================
+        function loadApiKey() {
+            const savedKey = localStorage.getItem('deepseek_api_key');
+            if (savedKey) {
+                state.apiKey = savedKey;
+                document.getElementById('apiKeyInput').value = savedKey;
+            }
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                localStorage.setItem('deepseek_api_key', key);
+                state.apiKey = key;
+                addMessage('ai', '✅ API key saved! You\'re ready to roll.');
+            }
+        }
+
+        async function testApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (!key) {
+                addMessage('ai', '⚠️ Please enter an API key first.');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        max_tokens: 10
+                    })
+                });
+
+                if (response.ok) {
+                    addMessage('ai', '✅ API key is working perfectly!');
+                } else {
+                    addMessage('ai', '❌ API key test failed. Please check your key.');
+                }
+            } catch (error) {
+                addMessage('ai', '❌ Connection error. Please check your internet.');
+            }
+        }
+
+        // ==================== MODE SELECTION ====================
+        function selectMode(mode) {
+            state.mode = mode;
+
+            // Update UI
+            document.getElementById('tutorialMode').classList.remove('active');
+            document.getElementById('sparringMode').classList.remove('active');
+            document.getElementById(`${mode}Mode`).classList.add('active');
+
+            // Handle training focus visibility
+            const trainingSection = document.getElementById('trainingFocusSection');
+            if (mode === 'sparring') {
+                trainingSection.classList.add('hidden');
+            } else {
+                trainingSection.classList.remove('hidden');
+            }
+
+            // Update header status
+            updateHeaderStatus();
+        }
+
+        function updateHeaderStatus() {
+            const badge = document.querySelector('.status-badge');
+            if (state.sparringActive) {
+                document.getElementById('endSparringBtn').classList.add('visible');
+            } else {
+                document.getElementById('endSparringBtn').classList.remove('visible');
+            }
+        }
+
+        // ==================== SKILL SELECTION ====================
+        function selectSkill(skill) {
+            state.skill = skill;
+
+            // Update UI
+            document.querySelectorAll('.skill-option').forEach(el => el.classList.remove('active'));
+            document.getElementById(`skill-${skill}`).classList.add('active');
+        }
+
+        // ==================== TOPIC MANAGEMENT ====================
+        function handleTopicChange() {
+            const select = document.getElementById('topicSelect');
+            const customInput = document.getElementById('customTopic');
+
+            if (select.value) {
+                customInput.value = select.value;
+                state.topic = select.value;
+            }
+        }
+
+        function saveCustomTopic() {
+            const customTopic = document.getElementById('customTopic').value.trim();
+            if (!customTopic) return;
+
+            // Get saved topics
+            let savedTopics = JSON.parse(localStorage.getItem('saved_topics') || '[]');
+
+            // Add if not already exists
+            if (!savedTopics.includes(customTopic)) {
+                savedTopics.push(customTopic);
+                localStorage.setItem('saved_topics', JSON.stringify(savedTopics));
+                loadSavedTopics();
+                addMessage('ai', `✅ Topic saved: "${customTopic}"`);
+            }
+
+            state.topic = customTopic;
+            document.getElementById('topicSelect').value = customTopic;
+        }
+
+        function loadSavedTopics() {
+            const savedTopics = JSON.parse(localStorage.getItem('saved_topics') || '[]');
+            const group = document.getElementById('savedTopicsGroup');
+
+            // Clear existing options
+            group.innerHTML = '';
+
+            // Add saved topics
+            savedTopics.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic;
+                option.textContent = topic.length > 40 ? topic.substring(0, 40) + '...' : topic;
+                group.appendChild(option);
+            });
+        }
+
+        // ==================== SOUND CONTROLS ====================
+        function setSound(setting) {
+            state.soundEnabled = (setting === 'on');
+
+            document.getElementById('soundOnBtn').classList.remove('active');
+            document.getElementById('soundOffBtn').classList.remove('active');
+            document.getElementById(`sound${setting.charAt(0).toUpperCase() + setting.slice(1)}Btn`).classList.add('active');
+
+            console.log('Sound set to:', setting, 'Enabled:', state.soundEnabled);
+        }
+
+        function testSound() {
+            console.log('Test sound called, soundEnabled:', state.soundEnabled);
+            console.log('Speech synthesis available:', !!window.speechSynthesis);
+            speak("This is a test. Can you hear me?");
+        }
+
+        // ==================== VOICE MANAGEMENT ====================
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+
+            // Sort voices: English first, then natural-sounding voices preferred
+            const voicePriority = ['Google', 'Microsoft', 'Premium', 'Neural', 'Natural', 'Enhanced'];
+            state.availableVoices = voices.sort((a, b) => {
+                const aEn = a.lang.startsWith('en-');
+                const bEn = b.lang.startsWith('en-');
+                if (aEn && !bEn) return -1;
+                if (!aEn && bEn) return 1;
+
+                for (const keyword of voicePriority) {
+                    const aHas = a.name.includes(keyword);
+                    const bHas = b.name.includes(keyword);
+                    if (aHas && !bHas) return -1;
+                    if (!aHas && bHas) return 1;
+                }
+                return 0;
+            });
+
+            // Populate voice selector
+            const select = document.getElementById('voiceSelect');
+            select.innerHTML = '';
+
+            // Group by language
+            const englishVoices = state.availableVoices.filter(v => v.lang.startsWith('en-'));
+            const otherVoices = state.availableVoices.filter(v => !v.lang.startsWith('en-'));
+
+            if (englishVoices.length > 0) {
+                const enGroup = document.createElement('optgroup');
+                enGroup.label = '🇺🇸 English Voices (Recommended)';
+                englishVoices.forEach((voice, index) => {
+                    const option = document.createElement('option');
+                    option.value = state.availableVoices.indexOf(voice);
+                    const label = voice.name.length > 35 ? voice.name.substring(0, 35) + '...' : voice.name;
+                    option.textContent = `${label} (${voice.lang})`;
+                    if (index === 0) option.selected = true;
+                    enGroup.appendChild(option);
+                });
+                select.appendChild(enGroup);
+            }
+
+            if (otherVoices.length > 0) {
+                const otherGroup = document.createElement('optgroup');
+                otherGroup.label = '🌍 Other Voices';
+                otherVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = state.availableVoices.indexOf(voice);
+                    const label = voice.name.length > 35 ? voice.name.substring(0, 35) + '...' : voice.name;
+                    option.textContent = `${label} (${voice.lang})`;
+                    otherGroup.appendChild(option);
+                });
+                select.appendChild(otherGroup);
+            }
+
+            // Auto-select best voice
+            if (state.availableVoices.length > 0) {
+                selectVoice();
+            }
+        }
+
+        // Reload voices when they change
+        if (window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        function selectVoice() {
+            const select = document.getElementById('voiceSelect');
+            const index = parseInt(select.value);
+            if (!isNaN(index) && state.availableVoices[index]) {
+                state.selectedVoice = state.availableVoices[index];
+                localStorage.setItem('selected_voice', state.selectedVoice.name);
+            }
+        }
+
+        function testAllVoices() {
+            const englishVoices = state.availableVoices.filter(v => v.lang.startsWith('en-')).slice(0, 5);
+
+            if (englishVoices.length === 0) {
+                addMessage('ai', '⚠️ No English voices available. Try using Chrome or Edge.');
+                return;
+            }
+
+            addMessage('ai', `🎵 Testing ${englishVoices.length} voices. Listen and pick your favorite!`);
+
+            let delay = 0;
+            englishVoices.forEach((voice, i) => {
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(`Voice ${i + 1}: ${voice.name}. Hey, great to meet you. Let's win this debate.`);
+                    utterance.voice = voice;
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }, delay);
+                delay += 3500;
+            });
+        }
+
+        function speak(text) {
+            console.log('speak() called with:', text);
+            console.log('soundEnabled:', state.soundEnabled);
+            console.log('speechSynthesis available:', !!window.speechSynthesis);
+
+            if (!state.soundEnabled || !window.speechSynthesis) {
+                console.log('Speech blocked - soundEnabled:', state.soundEnabled, 'speechSynthesis:', !!window.speechSynthesis);
+                return;
+            }
+
+            // Stop any current speech
+            window.speechSynthesis.cancel();
+
+            // More natural speech parameters
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;      // Natural speed
+            utterance.pitch = 0.95;    // Slightly deeper for coach persona
+            utterance.volume = 1.0;
+
+            // Use selected voice or find best English voice
+            if (state.selectedVoice) {
+                utterance.voice = state.selectedVoice;
+                console.log('Using selected voice:', state.selectedVoice.name);
+            } else {
+                const voices = window.speechSynthesis.getVoices();
+                console.log('Available voices:', voices.length);
+                // Prioritize: Google > Microsoft > Neural > Any English
+                const englishVoice = voices.find(v => v.lang.startsWith('en-') && v.name.includes('Google')) ||
+                                   voices.find(v => v.lang.startsWith('en-') && v.name.includes('Microsoft')) ||
+                                   voices.find(v => v.lang.startsWith('en-') && (v.name.includes('Neural') || v.name.includes('Premium'))) ||
+                                   voices.find(v => v.lang.startsWith('en-US')) ||
+                                   voices.find(v => v.lang.startsWith('en-GB')) ||
+                                   voices.find(v => v.lang.startsWith('en-'));
+                if (englishVoice) {
+                    utterance.voice = englishVoice;
+                    console.log('Using auto-selected voice:', englishVoice.name);
+                }
+            }
+
+            utterance.onstart = () => {
+                console.log('Speech started');
+                state.isSpeaking = true;
+                document.getElementById('stopSpeakingBtn').classList.add('visible');
+            };
+
+            utterance.onend = () => {
+                console.log('Speech ended');
+                state.isSpeaking = false;
+                document.getElementById('stopSpeakingBtn').classList.remove('visible');
+            };
+
+            utterance.onerror = (event) => {
+                console.error('Speech error:', event.error);
+            };
+
+            console.log('About to call speechSynthesis.speak()');
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+            state.isSpeaking = false;
+            document.getElementById('stopSpeakingBtn').classList.remove('visible');
+        }
+
+        // ==================== INPUT MODE ====================
+        function toggleInputMode() {
+            state.inputMode = document.getElementById('inputMode').value;
+            const voiceBtn = document.getElementById('voiceBtn');
+
+            if (state.inputMode === 'text') {
+                voiceBtn.classList.add('hidden');
+            } else {
+                voiceBtn.classList.remove('hidden');
+            }
+        }
+
+        // ==================== VOICE RECOGNITION ====================
+        let recognition = null;
+
+        function initSpeechRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                addMessage('ai', '⚠️ Voice recognition is not supported in your browser. Please use Chrome or Edge.');
+                return false;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (interimTranscript) {
+                    document.getElementById('transcriptText').textContent = `🎤 ${interimTranscript}`;
+                }
+
+                if (finalTranscript) {
+                    document.getElementById('userInput').value = finalTranscript;
+                    document.getElementById('transcriptText').textContent = `✅ "${finalTranscript}"`;
+                    setTimeout(() => {
+                        toggleVoice(); // Stop listening
+                        sendMessage(); // Auto send
+                    }, 500);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    // Just restart
+                } else if (event.error === 'network') {
+                    addMessage('ai', '⚠️ Network error in speech recognition. Please check your connection.');
+                    toggleVoice();
+                }
+            };
+
+            recognition.onend = () => {
+                if (state.isListening) {
+                    recognition.start();
+                }
+            };
+
+            return true;
+        }
+
+        function toggleVoice() {
+            if (!recognition && !initSpeechRecognition()) return;
+
+            const btn = document.getElementById('voiceBtn');
+            const transcript = document.getElementById('liveTranscript');
+
+            if (state.isListening) {
+                recognition.stop();
+                state.isListening = false;
+                btn.classList.remove('listening');
+                btn.classList.add('inactive');
+                transcript.classList.remove('active');
+            } else {
+                recognition.start();
+                state.isListening = true;
+                btn.classList.add('listening');
+                btn.classList.remove('inactive');
+                transcript.classList.add('active');
+                document.getElementById('transcriptText').textContent = '🎤 Listening... Speak now!';
+            }
+        }
+
+        // ==================== SESSION MANAGEMENT ====================
+        async function startSession() {
+            const topic = document.getElementById('customTopic').value.trim() || document.getElementById('topicSelect').value;
+
+            if (!topic) {
+                addMessage('ai', '⚠️ Please select or enter a debate topic first.');
+                return;
+            }
+
+            if (!state.apiKey) {
+                addMessage('ai', '⚠️ Please enter your DeepSeek API key first.');
+                return;
+            }
+
+            state.topic = topic;
+            state.side = document.getElementById('sideSelect').value;
+            state.sessionActive = true;
+            state.sparringActive = (state.mode === 'sparring');
+            state.conversationHistory = [];
+            state.userSpeeches = [];
+            state.currentTurn = 0;
+
+            // Clear chat and add welcome
+            document.getElementById('chatMessages').innerHTML = '';
+
+            updateHeaderStatus();
+
+            // Generate opening message
+            const systemPrompt = getSystemPrompt();
+            state.conversationHistory.push({
+                role: 'system',
+                content: systemPrompt
+            });
+
+            // Get AI opening
+            addMessage('ai', '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span> Getting your session ready...</span>');
+
+            const opening = await callAI([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: 'START_SESSION' }
+            ]);
+
+            // Remove loading and add real message
+            document.querySelector('.message.ai .content').innerHTML = opening;
+            state.conversationHistory.push({ role: 'assistant', content: opening });
+            speak(opening);
+        }
+
+        function getSystemPrompt() {
+            const basePrompt = `You are a 24-year-old champion debate coach and former WUDC winner. You're energetic, logical, and speak like a cool older sibling who genuinely wants to help your student excel.
+
+CRITICAL LANGUAGE RULES:
+- NEVER use "AI-speak" like "Let's dive into", "Certainly", "Here's", "I understand", etc.
+- Use natural, conversational phrases: "hold steady", "nail it", "bullets", "strong point", "let's break this down"
+- ALWAYS provide emotional validation BEFORE critical feedback
+- Be encouraging but demanding when it comes to logic and delivery
+
+COACHING APPROACH:
+1. Aura First: Focus on delivery confidence before getting into logic
+2. Logic Layer: Ensure every argument has Warrant (why it's true) and Impact (why it matters)
+3. Real Talk: Point out filler words (um, uh, like) but do it gently
+
+Current Session:
+- Topic: ${state.topic}
+- Student Side: ${state.side === 'proposition' ? 'Proposition (Affirmative)' : 'Opposition (Negative)'}
+- Mode: ${state.mode === 'sparring' ? 'SPARRING MODE - You are the OPPONENT, pure debate combat' : 'TUTORIAL MODE - You are the COACH, guide them'}
+${state.skill ? `- Training Focus: ${state.skill.toUpperCase()}` : ''}`;
+
+            if (state.mode === 'sparring') {
+                return basePrompt + `
+
+SPARRING MODE RULES (CRITICAL):
+- You are NOW the debate OPPONENT, taking the ${state.side === 'proposition' ? 'OPPOSITION' : 'PROPOSITION'} side
+- DO NOT teach, coach, or give feedback during the debate
+- Fight hard with arguments, logic, and rhetoric
+- Wait for the debrief to give feedback
+- Be competitive but fair`;
+            }
+
+            return basePrompt + `
+
+TUTORIAL MODE RULES:
+- Guide using Socratic questions - NEVER complete their arguments for them
+- Ask "Why do you think that is?" "What's the impact of that?"
+- Celebrate good thinking, then push for more depth
+- Point out missing Warrants or Impacts`;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            console.log('sendMessage: message=', message);
+            console.log('sendMessage: sessionActive=', state.sessionActive);
+
+            if (!message) {
+                console.log('sendMessage: No message, returning');
+                return;
+            }
+            if (!state.sessionActive) {
+                console.log('sendMessage: No active session, returning');
+                addMessage('ai', '⚠️ Please start a session first by clicking the "Start Session" button above!');
+                return;
+            }
+
+            // Add user message
+            addMessage('user', message);
+            state.userSpeeches.push(message);
+            state.conversationHistory.push({ role: 'user', content: message });
+            input.value = '';
+            state.currentTurn++;
+
+            // Get AI response
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'message ai';
+            thinkingDiv.innerHTML = `<div class="sender">Debate Coach</div><div class="content"><span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span></div>`;
+            document.getElementById('chatMessages').appendChild(thinkingDiv);
+            scrollToBottom();
+
+            const response = await callAI(state.conversationHistory);
+
+            // Update message
+            thinkingDiv.querySelector('.content').innerHTML = response;
+            state.conversationHistory.push({ role: 'assistant', content: response });
+
+            speak(response);
+            scrollToBottom();
+        }
+
+        async function callAI(messages) {
+            console.log('callAI: Starting API call...');
+            console.log('callAI: API Key exists:', !!state.apiKey);
+            console.log('callAI: Messages count:', messages.length);
+
+            try {
+                const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: messages,
+                        temperature: 0.9,
+                        max_tokens: 1000
+                    })
+                });
+
+                console.log('callAI: Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('callAI: API error response:', errorText);
+                    throw new Error(`API error: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('callAI: Success!');
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('callAI: Error:', error);
+                return `⚠️ Connection failed: ${error.message}. Please check your API key and internet connection.`;
+            }
+        }
+
+        async function endSparring() {
+            if (!state.sparringActive) return;
+
+            state.sparringActive = false;
+            document.getElementById('endSparringBtn').classList.remove('visible');
+
+            addMessage('ai', '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span> Analyzing your performance...</span>');
+
+            // Generate debrief
+            const debriefPrompt = `You just finished a sparring session. Generate a comprehensive debrief report in this EXACT format:
+
+AURA CHECK:
+Fluency: [X]/5 stars
+Dehydration: [X]% (low filler words = high score)
+Pace: [Too fast / Too slow / Just right]
+
+LOGIC CHECK:
+[Analyze the strongest argument made, identify any logical gaps or missing warrants]
+
+GOLDEN REWRITE:
+Original: "${state.userSpeeches[state.userSpeeches.length - 1] || '[Last speech]'}"
+Elevated: [Rewrite with more commanding language, stronger rhetoric, and better flow]
+
+Session Summary:
+[Brief encouraging closing with 1-2 specific things to work on]`;
+
+            const messages = [
+                ...state.conversationHistory,
+                { role: 'system', content: `You are now switching back to COACH mode. Provide honest, constructive feedback. ${debriefPrompt}` },
+                { role: 'user', content: 'END_SPARRING - Generate debrief report' }
+            ];
+
+            const debrief = await callAI(messages);
+
+            // Parse and display debrief
+            displayDebrief(debrief);
+        }
+
+        function displayDebrief(debrief) {
+            const report = document.getElementById('debriefReport');
+            report.classList.add('visible');
+
+            // Parse sections
+            const auraMatch = debrief.match(/AURA CHECK:([\s\S]*?)LOGIC CHECK:/);
+            const logicMatch = debrief.match(/LOGIC CHECK:([\s\S]*?)GOLDEN REWRITE:/);
+            const goldenMatch = debrief.match(/GOLDEN REWRITE:([\s\S]*?)Session Summary/ || debrief.match(/GOLDEN REWRITE:([\s\S]*)/));
+
+            if (auraMatch) {
+                const fluencyMatch = auraMatch[1].match(/Fluency:\s*(.+)/i);
+                const dehydrationMatch = auraMatch[1].match(/Dehydration:\s*(.+)/i);
+                const paceMatch = auraMatch[1].match(/Pace:\s*(.+)/i);
+
+                if (fluencyMatch) document.getElementById('fluencyScore').textContent = fluencyMatch[1].trim();
+                if (dehydrationMatch) document.getElementById('dehydrationRate').textContent = dehydrationMatch[1].trim();
+                if (paceMatch) document.getElementById('paceScore').textContent = paceMatch[1].trim();
+            }
+
+            if (logicMatch) {
+                document.getElementById('logicCheck').innerHTML = logicMatch[1].trim().replace(/\n/g, '<br>');
+            }
+
+            if (goldenMatch) {
+                const originalMatch = goldenMatch[1].match(/Original:\s*"([^"]*)"/);
+                const elevatedMatch = goldenMatch[1].match(/Elevated:\s*(.+)/s);
+
+                if (originalMatch) {
+                    document.getElementById('originalSpeech').textContent = `"${originalMatch[1]}"`;
+                }
+                if (elevatedMatch) {
+                    document.getElementById('improvedSpeech').innerHTML = elevatedMatch[1].trim();
+                }
+            }
+
+            // Add summary to chat
+            const summary = debrief.match(/Session Summary:\s*([\s\S]*)/);
+            if (summary) {
+                document.querySelector('.message.ai:last-child .content').innerHTML = summary[1].trim();
+            }
+
+            report.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function startNewSession() {
+            document.getElementById('debriefReport').classList.remove('visible');
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message ai">
+                    <div class="sender">Debate Coach</div>
+                    <div class="content">
+                        Ready for round two! 🥊<br><br>
+                        Set up your new session above and let's get back to work.
+                    </div>
+                </div>
+            `;
+            state.sessionActive = false;
+            state.sparringActive = false;
+            state.userSpeeches = [];
+            state.currentTurn = 0;
+            updateHeaderStatus();
+        }
+
+        // ==================== UI HELPERS ====================
+        function addMessage(sender, content) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = `
+                <div class="sender">${sender === 'ai' ? 'Debate Coach' : 'You'}</div>
+                <div class="content">${content}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Keyboard shortcut
+        document.getElementById('userInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
