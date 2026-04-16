@@ -442,7 +442,7 @@
 
         .aura-metrics {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
         }
 
@@ -762,41 +762,14 @@
         <!-- API Key Section -->
         <div class="api-section">
             <h3>🔑 API Configuration</h3>
-
-            <!-- Speech Service Selection -->
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: 600; color: var(--gray); display: block; margin-bottom: 8px;">Speech Recognition Service</label>
-                <select id="speechService" onchange="toggleSpeechService()" style="width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: var(--light); font-size: 1rem; cursor: pointer;">
-                    <option value="deepgram">🎙️ Deepgram (Recommended - with emotion analysis)</option>
-                    <option value="browser">🌐 Browser Built-in (Free, no API key needed)</option>
-                </select>
+            <div class="api-input-group">
+                <input type="password" id="apiKeyInput" placeholder="Enter your DeepSeek API Key (sk-...)">
+                <button class="btn btn-success" onclick="saveApiKey()">💾 Save</button>
+                <button class="btn btn-secondary" onclick="testApiKey()">Test</button>
             </div>
-
-            <!-- Deepgram API Key -->
-            <div id="deepgramKeySection">
-                <div class="api-input-group">
-                    <input type="password" id="deepgramKeyInput" placeholder="Enter Deepgram API Key (starts with dg...)">
-                    <button class="btn btn-success" onclick="saveDeepgramKey()">💾 Save</button>
-                    <button class="btn btn-secondary" onclick="testDeepgramKey()">Test</button>
-                </div>
-                <p style="margin-top: 5px; color: var(--gray); font-size: 0.85rem;">
-                    Get free API key at <a href="https://deepgram.com/" target="_blank" style="color: var(--primary);">deepgram.com</a> - 200 hours/month free
-                </p>
-            </div>
-
-            <!-- Deepgram Status -->
-            <div id="deepgramStatus" style="margin-top: 10px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); display: none;">
-                <span id="deepgramStatusText">Checking...</span>
-            </div>
-
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                <label style="font-weight: 600; color: var(--gray); display: block; margin-bottom: 8px;">DeepSeek API (for AI Coach)</label>
-                <div class="api-input-group">
-                    <input type="password" id="apiKeyInput" placeholder="Enter DeepSeek API Key (sk-...)">
-                    <button class="btn btn-success" onclick="saveApiKey()">💾 Save</button>
-                    <button class="btn btn-secondary" onclick="testApiKey()">Test</button>
-                </div>
-            </div>
+            <p style="margin-top: 10px; color: var(--gray); font-size: 0.9rem;">
+                Your API key is stored locally in your browser and never sent to our servers.
+            </p>
         </div>
 
         <!-- Mode Selection -->
@@ -941,24 +914,6 @@
                         <div class="metric-value" id="paceScore">-</div>
                         <div class="metric-label">Pace</div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="emotionScore">-</div>
-                        <div class="metric-label">Emotion</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Emotion Timeline (Deepgram only) -->
-            <div class="debrief-section" id="emotionTimelineSection" style="display: none;">
-                <h4>😊 Emotion Timeline</h4>
-                <div id="emotionTimeline" style="display: flex; gap: 3px; height: 60px; align-items: flex-end; overflow-x: auto; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 8px;">
-                    <!-- Emotion bars will be added here -->
-                </div>
-                <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.85rem; color: var(--gray); justify-content: center;">
-                    <span>😠 Angry</span>
-                    <span>😐 Neutral</span>
-                    <span>😊 Happy</span>
-                    <span>😃 Excited</span>
                 </div>
             </div>
 
@@ -1012,16 +967,12 @@
             userSpeeches: [],
             currentTurn: 0,
             selectedVoice: null,
-            availableVoices: [],
-            speechService: 'deepgram', // 'deepgram' or 'browser'
-            deepgramKey: '',
-            emotionData: [] // Store emotion data from Deepgram
+            availableVoices: []
         };
 
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', () => {
             loadApiKey();
-            loadDeepgramKey();
             loadSavedTopics();
             setSound('on');
             loadVoices();
@@ -1074,75 +1025,6 @@
                 }
             } catch (error) {
                 addMessage('ai', '❌ Connection error. Please check your internet.');
-            }
-        }
-
-        // ==================== DEEPGRAM API KEY MANAGEMENT ====================
-        function loadDeepgramKey() {
-            const savedKey = localStorage.getItem('deepgram_api_key');
-            if (savedKey) {
-                state.deepgramKey = savedKey;
-                document.getElementById('deepgramKeyInput').value = savedKey;
-            }
-        }
-
-        function saveDeepgramKey() {
-            const key = document.getElementById('deepgramKeyInput').value.trim();
-            if (key) {
-                localStorage.setItem('deepgram_api_key', key);
-                state.deepgramKey = key;
-                addMessage('ai', '✅ Deepgram API key saved! Speech recognition is ready.');
-            }
-        }
-
-        async function testDeepgramKey() {
-            const key = document.getElementById('deepgramKeyInput').value.trim();
-            if (!key) {
-                addMessage('ai', '⚠️ Please enter a Deepgram API key first.');
-                return;
-            }
-
-            const statusDiv = document.getElementById('deepgramStatus');
-            const statusText = document.getElementById('deepgramStatusText');
-            statusDiv.style.display = 'block';
-            statusText.textContent = '⏳ Testing connection...';
-
-            try {
-                const response = await fetch('https://api.deepgram.com/v1/projects', {
-                    headers: { 'Authorization': `Token ${key}` }
-                });
-
-                if (response.ok) {
-                    statusText.textContent = '✅ Deepgram connection successful!';
-                    statusDiv.style.background = 'rgba(16, 185, 129, 0.1)';
-                    addMessage('ai', '✅ Deepgram API key is working! Speech recognition with emotion analysis is ready.');
-                } else {
-                    statusText.textContent = '❌ Invalid API key';
-                    statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
-                    addMessage('ai', '❌ Deepgram API key test failed. Please check your key.');
-                }
-            } catch (error) {
-                statusText.textContent = '❌ Connection error';
-                statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
-                addMessage('ai', '❌ Connection error. Please check your internet.');
-            }
-        }
-
-        function toggleSpeechService() {
-            const service = document.getElementById('speechService').value;
-            state.speechService = service;
-
-            const deepgramSection = document.getElementById('deepgramKeySection');
-
-            if (service === 'deepgram') {
-                deepgramSection.style.display = 'block';
-            } else {
-                deepgramSection.style.display = 'none';
-            }
-
-            // Stop any ongoing recognition
-            if (state.isListening) {
-                toggleVoice();
             }
         }
 
@@ -1533,247 +1415,98 @@
         }
 
         // ==================== VOICE RECOGNITION ====================
-        let deepgramSocket = null;
-        let browserRecognition = null;
-        let currentTranscript = '';
-        let isRecording = false;
-        let mediaRecorder = null;
-        let audioChunks = [];
+        let recognition = null;
+        let accumulatedTranscript = '';
+        let lastProcessedLength = 0;
 
-        // ==================== DEEPGRAM WEBSOCKET ====================
-        async function startDeepgramRecording() {
-            if (!state.deepgramKey) {
-                addMessage('ai', '⚠️ Please enter your Deepgram API key first.');
-                return false;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-                // Create WebSocket connection to Deepgram
-                const url = `wss://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&interim_results=true&events=true&emotion=true`;
-                deepgramSocket = new WebSocket(url, ['Token', state.deepgramKey]);
-
-                // Setup MediaRecorder
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0 && deepgramSocket.readyState === WebSocket.OPEN) {
-                        audioChunks.push(event.data);
-                        deepgramSocket.send(event.data);
-                    }
-                };
-
-                mediaRecorder.start(250); // Send audio chunks every 250ms
-
-                // Reset transcript and emotion data
-                currentTranscript = '';
-                state.emotionData = [];
-
-                deepgramSocket.onopen = () => {
-                    console.log('Deepgram WebSocket connected');
-                };
-
-                deepgramSocket.onmessage = (message) => {
-                    const response = JSON.parse(message.data);
-
-                    // Handle transcript
-                    if (response.channel) {
-                        const alternatives = response.channel.alternatives;
-                        if (alternatives && alternatives[0]) {
-                            const transcript = alternatives[0].transcript;
-
-                            if (transcript) {
-                                if (response.is_final) {
-                                    // Final result - add to transcript
-                                    if (!currentTranscript.endsWith(transcript.trim())) {
-                                        currentTranscript += transcript + ' ';
-                                    }
-                                } else {
-                                    // Interim result - show but don't save yet
-                                    // Just display the current accumulated + interim
-                                }
-
-                                // Display current state
-                                document.getElementById('userInput').value = currentTranscript + (response.is_final ? '' : transcript);
-                            }
-                        }
-                    }
-
-                    // Handle emotion data
-                    if (response.emotion && response.emotion.results) {
-                        const emotions = response.emotion.results;
-                        emotions.forEach(emotion => {
-                            if (emotion.emotion && emotion.confidence > 0.5) {
-                                state.emotionData.push({
-                                    emotion: emotion.emotion,
-                                    confidence: emotion.confidence,
-                                    timestamp: Date.now()
-                                });
-                            }
-                        });
-                    }
-                };
-
-                deepgramSocket.onerror = (error) => {
-                    console.error('Deepgram WebSocket error:', error);
-                    addMessage('ai', '⚠️ Deepgram connection error. Please check your API key and internet connection.');
-                    stopRecording();
-                };
-
-                deepgramSocket.onclose = () => {
-                    if (isRecording) {
-                        console.log('Deepgram connection closed, reconnecting...');
-                        // Try to reconnect
-                    }
-                };
-
-                return true;
-
-            } catch (error) {
-                console.error('Error starting Deepgram recording:', error);
-                if (error.name === 'NotAllowedError') {
-                    addMessage('ai', '⚠️ Microphone permission denied. Please allow microphone access.');
-                } else {
-                    addMessage('ai', '⚠️ Error accessing microphone: ' + error.message);
-                }
-                return false;
-            }
-        }
-
-        function stopDeepgramRecording() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-            }
-            if (deepgramSocket) {
-                deepgramSocket.close();
-                deepgramSocket = null;
-            }
-
-            // Stop all audio tracks
-            if (window.localStream) {
-                window.localStream.getTracks().forEach(track => track.stop());
-            }
-        }
-
-        // ==================== BROWSER SPEECH RECOGNITION (FALLBACK) ====================
-        function initBrowserSpeechRecognition() {
+        function initSpeechRecognition() {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                addMessage('ai', '⚠️ Voice recognition is not supported in your browser.');
+                addMessage('ai', '⚠️ Voice recognition is not supported in your browser. Please use Chrome or Edge.');
                 return false;
             }
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            browserRecognition = new SpeechRecognition();
-            browserRecognition.continuous = true;
-            browserRecognition.interimResults = true;
-            browserRecognition.lang = 'en-US';
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
 
-            browserRecognition.onresult = (event) => {
-                let finalText = '';
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
 
+                // Process all results and only accumulate new final ones
                 for (let i = 0; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        finalText += event.results[i][0].transcript + ' ';
+                        // Check if this is a new final result
+                        const fullTextSoFar = accumulatedTranscript + transcript + ' ';
+                        if (fullTextSoFar.length > lastProcessedLength) {
+                            accumulatedTranscript = fullTextSoFar;
+                            lastProcessedLength = accumulatedTranscript.length;
+                        }
+                    } else {
+                        // Show interim transcript
+                        interimTranscript += transcript;
                     }
                 }
 
-                if (finalText && !currentTranscript.endsWith(finalText.trim())) {
-                    currentTranscript += finalText;
-                }
-
-                // Get latest interim
-                let interimText = '';
-                for (let i = event.results.length - 1; i >= 0; i--) {
-                    if (!event.results[i].isFinal) {
-                        interimText = event.results[i][0].transcript;
-                        break;
-                    }
-                }
-
-                document.getElementById('userInput').value = currentTranscript + interimText;
+                // Display accumulated + interim
+                const displayText = accumulatedTranscript + interimTranscript;
+                document.getElementById('userInput').value = displayText.trim();
             };
 
-            browserRecognition.onerror = (event) => {
-                if (event.error === 'not-allowed') {
-                    addMessage('ai', '⚠️ Microphone permission denied.');
-                    stopRecording();
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error === 'no-speech') {
+                    // Just restart
+                } else if (event.error === 'network') {
+                    addMessage('ai', '⚠️ Network error in speech recognition. Please check your connection.');
+                    toggleVoice();
                 }
             };
 
-            browserRecognition.onend = () => {
-                if (isRecording) {
-                    browserRecognition.start();
+            recognition.onend = () => {
+                // Reset tracking when recognition restarts
+                if (state.isListening) {
+                    lastProcessedLength = 0;
+                    recognition.start();
                 }
             };
 
             return true;
         }
 
-        function startBrowserRecording() {
-            currentTranscript = '';
-            state.emotionData = [];
-            return initBrowserSpeechRecognition() && (() => {
-                browserRecognition.start();
-                return true;
-            })();
-        }
-
-        function stopBrowserRecording() {
-            if (browserRecognition) {
-                browserRecognition.stop();
-            }
-        }
-
-        // ==================== MAIN RECORDING FUNCTIONS ====================
-        async function startRecording() {
-            stopSpeaking(); // Stop any AI speech first
-
-            currentTranscript = '';
-            document.getElementById('userInput').value = '';
-            state.emotionData = [];
-
-            if (state.speechService === 'deepgram') {
-                const success = await startDeepgramRecording();
-                if (success) {
-                    isRecording = true;
-                    document.getElementById('voiceBtn').classList.add('listening');
-                    document.getElementById('voiceBtn').classList.remove('inactive');
-                }
-            } else {
-                const success = await startBrowserRecording();
-                if (success) {
-                    isRecording = true;
-                    document.getElementById('voiceBtn').classList.add('listening');
-                    document.getElementById('voiceBtn').classList.remove('inactive');
-                }
-            }
-        }
-
-        function stopRecording() {
-            isRecording = false;
-            document.getElementById('voiceBtn').classList.remove('listening');
-            document.getElementById('voiceBtn').classList.add('inactive');
-
-            if (state.speechService === 'deepgram') {
-                stopDeepgramRecording();
-            } else {
-                stopBrowserRecording();
-            }
-
-            // Auto send after stopping
-            const input = document.getElementById('userInput');
-            if (input.value.trim() && state.sessionActive) {
-                setTimeout(() => sendMessage(), 300);
-            }
-        }
-
         function toggleVoice() {
-            if (isRecording) {
-                stopRecording();
+            if (!recognition && !initSpeechRecognition()) return;
+
+            const btn = document.getElementById('voiceBtn');
+
+            if (state.isListening) {
+                // Second click - stop and send
+                recognition.stop();
+                state.isListening = false;
+                btn.classList.remove('listening');
+                btn.classList.add('inactive');
+
+                // Auto send after stopping
+                const input = document.getElementById('userInput');
+                if (input.value.trim() && state.sessionActive) {
+                    setTimeout(() => sendMessage(), 300);
+                }
             } else {
-                startRecording();
+                // First click - start listening
+                // Stop AI speaking first
+                stopSpeaking();
+
+                // Reset accumulated transcript for new recording
+                accumulatedTranscript = '';
+                lastProcessedLength = 0;
+                document.getElementById('userInput').value = '';
+
+                recognition.start();
+                state.isListening = true;
+                btn.classList.add('listening');
+                btn.classList.remove('inactive');
             }
         }
 
@@ -2022,103 +1755,7 @@ Session Summary:
                 document.querySelector('.message.ai:last-child .content').innerHTML = summary[1].trim();
             }
 
-            // Display emotion data if available (from Deepgram)
-            if (state.emotionData.length > 0) {
-                displayEmotionData();
-                calculateEmotionScore();
-            }
-
             report.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function displayEmotionData() {
-            const timelineSection = document.getElementById('emotionTimelineSection');
-            const timeline = document.getElementById('emotionTimeline');
-
-            if (state.emotionData.length === 0) {
-                timelineSection.style.display = 'none';
-                return;
-            }
-
-            timelineSection.style.display = 'block';
-            timeline.innerHTML = '';
-
-            // Create emotion bars
-            const maxSamples = Math.min(state.emotionData.length, 100);
-            const step = Math.ceil(state.emotionData.length / maxSamples);
-
-            for (let i = 0; i < state.emotionData.length; i += step) {
-                const emotion = state.emotionData[i];
-                if (!emotion.emotion) continue;
-
-                const height = Math.round(emotion.confidence * 100);
-                let color = '#64748b'; // default gray
-
-                // Emotion colors
-                const emotionColors = {
-                    'happy': '#10b981',      // green
-                    'sad': '#3b82f6',        // blue
-                    'angry': '#ef4444',       // red
-                    'fear': '#8b5cf6',        // purple
-                    'disgust': '#f59e0b',     // orange
-                    'surprise': '#ec4899',   // pink
-                    'neutral': '#64748b'     // gray
-                };
-
-                color = emotionColors[emotion.emotion.toLowerCase()] || color;
-
-                const bar = document.createElement('div');
-                bar.style.cssText = `
-                    flex: 1;
-                    min-width: 4px;
-                    height: ${height}%;
-                    background: ${color};
-                    border-radius: 2px;
-                    transition: height 0.2s;
-                `;
-                bar.title = `${emotion.emotion} (${Math.round(emotion.confidence * 100)}%)`;
-                timeline.appendChild(bar);
-            }
-        }
-
-        function calculateEmotionScore() {
-            if (state.emotionData.length === 0) return;
-
-            // Calculate dominant emotion
-            const emotionCounts = {};
-            let totalConfidence = 0;
-
-            state.emotionData.forEach(data => {
-                if (data.emotion && data.confidence > 0.5) {
-                    const emotion = data.emotion.toLowerCase();
-                    emotionCounts[emotion] = (emotionCounts[emotion] || 0) + data.confidence;
-                    totalConfidence += data.confidence;
-                }
-            });
-
-            // Find dominant emotion
-            let dominantEmotion = 'neutral';
-            let maxScore = 0;
-
-            for (const [emotion, score] of Object.entries(emotionCounts)) {
-                if (score > maxScore) {
-                    maxScore = score;
-                    dominantEmotion = emotion;
-                }
-            }
-
-            // Display as emoji
-            const emotionEmojis = {
-                'happy': '😊 Positive',
-                'sad': '😢 Somber',
-                'angry': '😠 Intense',
-                'fear': '😰 Nervous',
-                'surprise': '😲 Dynamic',
-                'neutral': '😐 Calm',
-                'disgust': '🤔 Reserved'
-            };
-
-            document.getElementById('emotionScore').textContent = emotionEmojis[dominantEmotion] || '😐 Calm';
         }
 
         function startNewSession() {
