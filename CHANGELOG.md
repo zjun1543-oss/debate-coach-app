@@ -1,16 +1,35 @@
 # 更新日志 (CHANGELOG)
 
-## [v1.1.0] - 2026-04-15
+## [v1.1.2] - 2026-04-16
 
-### 🎉 当前版本
-
-**最新版本**: v1.1.0
-**发布日期**: 2026-04-15
-**GitHub**: https://github.com/zjun1543-oss/debate-coach-app
+### 🔧 Critical Bug Fixes (WebSocket Crash)
+- **彻底解决 WebSocket 崩溃问题**: 在 `mediaRecorder.ondataavailable` 中增加严格校验
+  - 添加 `if (!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN)` 检查
+  - 只有连接真正可用时才发送音频数据
+  - 避免了 `Cannot read properties of null (reading 'readyState')` 错误
+- **增强断连诊断**: 捕获并打印 WebSocket 关闭的具体原因
+  - 在 `onclose` 回调中打印 `event.code` 和 `event.reason`
+  - 现在可以看到 Deepgram 关闭连接的真实原因（权限、参数等）
+- **优化初始化顺序**: 修复连接未稳就开始录音的问题
+  - 只有在 `socket.onopen` 触发后，才执行 `mediaRecorder.start()`
+  - 避免在连接建立前发送数据导致的问题
 
 ---
 
-### ✨ 核心功能
+## [v1.1.1] - 2026-04-16
+
+### 🔧 Bug Fixes
+- **修复 Deepgram WebSocket 连接问题**: 移除了无效的 `emotion=true` 参数
+  - Deepgram 的 Sentiment Analysis 只支持 `/read` 端点（用于分析已有文本）
+  - 实时流式 WebSocket 不支持情绪分析功能
+  - 更新了相关的 UI 文本和说明
+- **修复 API Key 输入提示**: 移除了"以 dg 开头"的误导性提示（数字格式的 key 也有效）
+
+---
+
+## [v1.1.0] - 2026-04-15
+
+### 🎉 核心功能
 
 #### 1. 双训练模式
 - **教学模式 (Tutorial Mode)**: 苏格拉底式引导，AI 作为教练
@@ -21,9 +40,8 @@
   - 期间不进行任何教学
   - 点击 "End Sparring" 生成复盘报告
 
-#### 2. 语音交互 🆕
+#### 2. 语音交互
 - **Deepgram 流式语音识别**: 实时转录，无重复问题
-- **情绪分析**: 检测说话时的情绪 (happy, sad, angry, fear, surprise, neutral)
 - **浏览器内置备用**: 无 API Key 时的回退方案
 - **语音合成 (TTS)**: 可选择多种自然语音
 - **打断功能**: 按下语音键自动打断 AI 说话
@@ -39,7 +57,7 @@
 - **徽章提示**: Header 显示练习次数
 
 #### 4. API 集成
-- **Deepgram API**: 语音识别 + 情绪分析 (免费 200h/月)
+- **Deepgram API**: 流式语音识别 (免费 200h/月)
 - **DeepSeek API**: AI 教练对话生成
 - **本地存储**: API Keys 安全存储在浏览器
 
@@ -48,9 +66,8 @@
 - 自定义话题输入
 - 本地缓存保存话题
 
-#### 6. 复盘报告系统 🆕
-- **Aura Check (气场仪表盘)**: 流畅度 / 脱水率 / 语速 / **情绪**
-- **情绪时间线**: 可视化整个练习的情绪变化
+#### 6. 复盘报告系统
+- **Aura Check (气场仪表盘)**: 流畅度 / 脱水率 / 语速
 - **Logic Check (逻辑体检)**: 证据链诊断
 - **Golden Rewrite (金句重写)**: 原始表达 vs 升级版本
 
@@ -58,21 +75,21 @@
 
 ### 🔄 版本更新记录
 
+#### v1.1.0 → v1.1.1 🔧 BUG FIX
+**修复**: Deepgram WebSocket 连接问题
+- 移除了无效的 `emotion=true` 参数
+- Deepgram Sentiment Analysis 只支持 `/read` 端点
+- 实时流式 WebSocket 不支持情绪分析
+- 更新相关 UI 文本和说明
+
 #### v1.0.4 → v1.1.0 🆕 MAJOR UPDATE
-**新功能**: Deepgram 流式语音识别 + 情绪分析
+**新功能**: Deepgram 流式语音识别
 
 **Deepgram 集成**:
 - WebSocket 实时流式语音识别
 - 彻底解决语音重复问题
 - Nova-2 模型 (更高准确度)
-- 情绪检测和分析
 - 免费层 200 小时/月
-
-**情绪分析功能**:
-- 实时检测 6 种情绪 (happy, sad, angry, fear, surprise, neutral)
-- 情绪时间线可视化
-- 主导情绪分析
-- 集成到复盘报告
 
 **用户体验改进**:
 - 语音服务选择器 (Deepgram / Browser)

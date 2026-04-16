@@ -767,7 +767,7 @@
             <div style="margin-bottom: 15px;">
                 <label style="font-weight: 600; color: var(--gray); display: block; margin-bottom: 8px;">Speech Recognition Service</label>
                 <select id="speechService" onchange="toggleSpeechService()" style="width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.3); color: var(--light); font-size: 1rem; cursor: pointer;">
-                    <option value="deepgram">🎙️ Deepgram (Recommended - with emotion analysis)</option>
+                    <option value="deepgram">🎙️ Deepgram (Recommended - Streaming STT)</option>
                     <option value="browser">🌐 Browser Built-in (Free, no API key needed)</option>
                 </select>
             </div>
@@ -775,7 +775,7 @@
             <!-- Deepgram API Key -->
             <div id="deepgramKeySection">
                 <div class="api-input-group">
-                    <input type="password" id="deepgramKeyInput" placeholder="Enter Deepgram API Key (starts with dg...)">
+                    <input type="password" id="deepgramKeyInput" placeholder="Enter Deepgram API Key">
                     <button class="btn btn-success" onclick="saveDeepgramKey()">💾 Save</button>
                     <button class="btn btn-secondary" onclick="testDeepgramKey()">Test</button>
                 </div>
@@ -1026,6 +1026,8 @@
             setSound('on');
             loadVoices();
             updateHistoryCount();
+            // Initialize speech service UI
+            toggleSpeechService();
         });
 
         // ==================== API KEY MANAGEMENT ====================
@@ -1115,7 +1117,7 @@
                 if (response.ok) {
                     statusText.textContent = '✅ Deepgram connection successful!';
                     statusDiv.style.background = 'rgba(16, 185, 129, 0.1)';
-                    addMessage('ai', '✅ Deepgram API key is working! Speech recognition with emotion analysis is ready.');
+                    addMessage('ai', '✅ Deepgram API key is working! Streaming speech recognition is ready.');
                 } else {
                     statusText.textContent = '❌ Invalid API key';
                     statusDiv.style.background = 'rgba(239, 68, 68, 0.1)';
@@ -1549,84 +1551,90 @@
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-                // Create WebSocket connection to Deepgram
-                const url = `wss://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&interim_results=true&events=true&emotion=true`;
-                deepgramSocket = new WebSocket(url, ['Token', state.deepgramKey]);
-
-                // Setup MediaRecorder
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0 && deepgramSocket.readyState === WebSocket.OPEN) {
-                        audioChunks.push(event.data);
-                        deepgramSocket.send(event.data);
-                    }
-                };
-
-                mediaRecorder.start(250); // Send audio chunks every 250ms
+                window.localStream = stream; // Store for cleanup
 
                 // Reset transcript and emotion data
                 currentTranscript = '';
                 state.emotionData = [];
 
+                // Create WebSocket connection to Deepgram
+                // Note: Emotion analysis is not available in streaming mode - only via /read endpoint for pre-recorded audio
+                const url = `wss://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&interim_results=true&vad_events=true`;
+                deepgramSocket = new WebSocket(url, ['Token', state.deepgramKey]);
+
+                // Setup MediaRecorder (but don't start until WebSocket is open)
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                // CRITICAL: Strict null/readyState check before sending data
+                mediaRecorder.ondataavailable = (event) => {
+                    // Must check both null and readyState to prevent crashes
+                    if (!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN) {
+                        console.warn('⚠️ WebSocket not ready, skipping audio chunk');
+                        return;
+                    }
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        try {
+                            deepgramSocket.send(event.data);
+                        } catch (e) {
+                            console.error('❌ Failed to send audio data:', e);
+                        }
+                    }
+                };
+
+                // WebSocket event handlers
                 deepgramSocket.onopen = () => {
-                    console.log('Deepgram WebSocket connected');
+                    console.log('✅ Deepgram WebSocket connected successfully');
+                    // IMPORTANT: Only start recording AFTER WebSocket is fully open
+                    try {
+                        mediaRecorder.start(250); // Send audio chunks every 250ms
+                        console.log('✅ MediaRecorder started');
+                        addMessage('ai', '✅ Deepgram recording started');
+                    } catch (e) {
+                        console.error('❌ Failed to start MediaRecorder:', e);
+                    }
                 };
 
                 deepgramSocket.onmessage = (message) => {
-                    const response = JSON.parse(message.data);
+                    try {
+                        const response = JSON.parse(message.data);
 
-                    // Handle transcript
-                    if (response.channel) {
-                        const alternatives = response.channel.alternatives;
-                        if (alternatives && alternatives[0]) {
-                            const transcript = alternatives[0].transcript;
+                        // Handle transcript
+                        if (response.channel) {
+                            const alternatives = response.channel.alternatives;
+                            if (alternatives && alternatives[0]) {
+                                const transcript = alternatives[0].transcript;
 
-                            if (transcript) {
-                                if (response.is_final) {
-                                    // Final result - add to transcript
-                                    if (!currentTranscript.endsWith(transcript.trim())) {
-                                        currentTranscript += transcript + ' ';
+                                if (transcript) {
+                                    if (response.is_final) {
+                                        // Final result - add to transcript
+                                        if (!currentTranscript.endsWith(transcript.trim())) {
+                                            currentTranscript += transcript + ' ';
+                                        }
                                     }
-                                } else {
-                                    // Interim result - show but don't save yet
-                                    // Just display the current accumulated + interim
-                                }
 
-                                // Display current state
-                                document.getElementById('userInput').value = currentTranscript + (response.is_final ? '' : transcript);
+                                    // Display current state
+                                    document.getElementById('userInput').value = currentTranscript + (response.is_final ? '' : transcript);
+                                }
                             }
                         }
-                    }
-
-                    // Handle emotion data
-                    if (response.emotion && response.emotion.results) {
-                        const emotions = response.emotion.results;
-                        emotions.forEach(emotion => {
-                            if (emotion.emotion && emotion.confidence > 0.5) {
-                                state.emotionData.push({
-                                    emotion: emotion.emotion,
-                                    confidence: emotion.confidence,
-                                    timestamp: Date.now()
-                                });
-                            }
-                        });
+                    } catch (e) {
+                        console.error('❌ Error parsing WebSocket message:', e);
                     }
                 };
 
                 deepgramSocket.onerror = (error) => {
-                    console.error('Deepgram WebSocket error:', error);
+                    console.error('❌ Deepgram WebSocket error:', error);
                     addMessage('ai', '⚠️ Deepgram connection error. Please check your API key and internet connection.');
-                    stopRecording();
                 };
 
-                deepgramSocket.onclose = () => {
-                    if (isRecording) {
-                        console.log('Deepgram connection closed, reconnecting...');
-                        // Try to reconnect
-                    }
+                // CRITICAL: Capture close code and reason for debugging
+                deepgramSocket.onclose = (event) => {
+                    console.error(`❌ Deepgram connection closed!`);
+                    console.error(`   Code: ${event.code} | Reason: ${event.reason || 'No reason provided'}`);
+                    console.error(`   Was clean: ${event.wasClean}`);
+                    addMessage('ai', `⚠️ Deepgram disconnected (Code: ${event.code}). Check console for details.`);
                 };
 
                 return true;
@@ -1643,17 +1651,38 @@
         }
 
         function stopDeepgramRecording() {
+            console.log('🛑 Stopping Deepgram recording');
+
+            // First, stop the media recorder to prevent further data attempts
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
+                try {
+                    mediaRecorder.stop();
+                    console.log('✅ MediaRecorder stopped');
+                } catch (e) {
+                    console.error('❌ Error stopping MediaRecorder:', e);
+                }
             }
+
+            // Then close the WebSocket (but don't set to null yet to avoid crashes)
             if (deepgramSocket) {
-                deepgramSocket.close();
-                deepgramSocket = null;
+                try {
+                    if (deepgramSocket.readyState === WebSocket.OPEN || deepgramSocket.readyState === WebSocket.CONNECTING) {
+                        deepgramSocket.close();
+                        console.log('✅ WebSocket closed');
+                    }
+                } catch (e) {
+                    console.error('❌ Error closing WebSocket:', e);
+                }
+                // Only set to null after a short delay to allow any pending callbacks to complete
+                setTimeout(() => {
+                    deepgramSocket = null;
+                }, 100);
             }
 
             // Stop all audio tracks
             if (window.localStream) {
                 window.localStream.getTracks().forEach(track => track.stop());
+                console.log('✅ Audio tracks stopped');
             }
         }
 
@@ -1728,25 +1757,42 @@
 
         // ==================== MAIN RECORDING FUNCTIONS ====================
         async function startRecording() {
+            console.log('🎤 Starting recording...');
+            console.log('Speech service:', state.speechService);
+            console.log('Has Deepgram key:', !!state.deepgramKey);
+
             stopSpeaking(); // Stop any AI speech first
 
             currentTranscript = '';
             document.getElementById('userInput').value = '';
             state.emotionData = [];
 
+            // Set recording state and update UI immediately
+            isRecording = true;
+            document.getElementById('voiceBtn').classList.add('listening');
+            document.getElementById('voiceBtn').classList.remove('inactive');
+
             if (state.speechService === 'deepgram') {
-                const success = await startDeepgramRecording();
-                if (success) {
-                    isRecording = true;
-                    document.getElementById('voiceBtn').classList.add('listening');
-                    document.getElementById('voiceBtn').classList.remove('inactive');
+                console.log('🎙️ Using Deepgram...');
+                if (!state.deepgramKey) {
+                    addMessage('ai', '⚠️ Please enter your Deepgram API key first, or switch to Browser mode.');
+                    isRecording = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('voiceBtn').classList.add('inactive');
+                    return;
                 }
+                // Note: Success message is now handled in WebSocket.onopen callback
+                await startDeepgramRecording();
             } else {
+                console.log('🌐 Using Browser speech recognition...');
                 const success = await startBrowserRecording();
-                if (success) {
-                    isRecording = true;
-                    document.getElementById('voiceBtn').classList.add('listening');
-                    document.getElementById('voiceBtn').classList.remove('inactive');
+                if (!success) {
+                    console.log('❌ Browser recording failed');
+                    isRecording = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('voiceBtn').classList.add('inactive');
+                } else {
+                    console.log('✅ Browser recording started');
                 }
             }
         }
